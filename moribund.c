@@ -216,6 +216,70 @@ void moribund_cpu_op_dup(MoribundCPU *cpu) {
         byte_stack_push(stack, b1);
         byte_stack_push(stack, b2);
         byte_stack_push(stack, b3);
+    } else {
+        printf("CRASH! (corrupt operating size)\n");
+        exit(-1);
+    }
+}
+
+void moribund_cpu_op_jcm(MoribundCPU *cpu) {
+    ByteStack *primary = moribund_cpu_get_stack(cpu, cpu->ps);
+    ByteStack *secondary = moribund_cpu_get_stack(cpu, cpu->ss);
+    if (cpu->os == 1) {
+        unsigned char pb0 = byte_stack_pop(primary);
+        byte_stack_push(primary, pb0);
+        unsigned char sb0 = byte_stack_pop(secondary);
+        byte_stack_push(secondary, sb0);
+        if (pb0 < sb0) {
+            cpu->pc = cpu->tar;
+        }
+    } else if (cpu->os == 2) {
+        unsigned char pb1 = byte_stack_pop(primary);
+        unsigned char pb0 = byte_stack_pop(primary);
+        byte_stack_push(primary, pb0);
+        byte_stack_push(primary, pb1);
+        unsigned char sb1 = byte_stack_pop(secondary);
+        unsigned char sb0 = byte_stack_pop(secondary);
+        byte_stack_push(secondary, sb0);
+        byte_stack_push(secondary, sb1);
+        
+        uint_least16_t primary_value = ((uint_least16_t)(pb1) << 8) + (uint_least16_t)pb0;
+        uint_least16_t secondary_value = ((uint_least16_t)(sb1) << 8) + (uint_least16_t)sb0;
+        if (primary_value < secondary_value) {
+            cpu->pc = cpu->tar;
+        } 
+    } else if (cpu->os == 4) {
+        unsigned char pb3 = byte_stack_pop(primary);
+        unsigned char pb2 = byte_stack_pop(primary);
+        unsigned char pb1 = byte_stack_pop(primary);
+        unsigned char pb0 = byte_stack_pop(primary);
+        byte_stack_push(primary, pb0);
+        byte_stack_push(primary, pb1);
+        byte_stack_push(primary, pb2);
+        byte_stack_push(primary, pb3);
+        unsigned char sb3 = byte_stack_pop(secondary);
+        unsigned char sb2 = byte_stack_pop(secondary);
+        unsigned char sb1 = byte_stack_pop(secondary);
+        unsigned char sb0 = byte_stack_pop(secondary);
+        byte_stack_push(secondary, sb0);
+        byte_stack_push(secondary, sb1);
+        byte_stack_push(secondary, sb2);
+        byte_stack_push(secondary, sb3);
+        
+        uint_least32_t primary_value = ((uint_least32_t)(pb3) << 24);
+        primary_value += ((uint_least32_t)(pb2) << 16);
+        primary_value += ((uint_least32_t)(pb1) << 8);
+        primary_value += (uint_least32_t)pb0;
+        uint_least32_t secondary_value = ((uint_least32_t)(sb3) << 24);
+        secondary_value += ((uint_least32_t)(sb2) << 16);
+        secondary_value += ((uint_least32_t)(sb1) << 8);
+        secondary_value += (uint_least32_t)sb0;
+        if (primary_value < secondary_value) {
+            cpu->pc = cpu->tar;
+        } 
+    } else {
+        printf("CRASH! (corrupt operating size)\n");
+        exit(-1);
     }
 }
 
@@ -283,6 +347,14 @@ int moribund_cpu_process(MoribundCPU *cpu) {
     else if (instruction == OP_SET) {
         printf("set\n");
         cpu->sc = cpu->os;
+    }
+    
+    else if (instruction == OP_JMP) {
+        printf("jmp\n");
+        cpu->pc = cpu->tar;
+    } else if (instruction == OP_JCM) {
+        printf("jcm\n");
+        moribund_cpu_op_jcm(cpu);
     }
     
     cpu->pc++;
