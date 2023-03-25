@@ -55,10 +55,19 @@ An adventure in computer architecture.
 | 0x83   | div  | stores (primary / secondary) in tmp |
 | 0x84   | mod  | stores (primary % secondary) in tmp |
 | 0x40   | not  | inverts tmp |
-| 0x41   | and  | stores bitwise AND of primary and secondary |
-| 0x42   | orr  | stores bitwise OR of primary and secondary |
-| 0x43   | xor  | stores bitwise XOR of primary and secondary |
-| 0x44   | lsh  | logical left shifts primary |
-| 0x45   | rsh  | logical right shifts primary |
+| 0x41   | and  | stores bitwise AND of primary and secondary in tmp |
+| 0x42   | orr  | stores bitwise OR of primary and secondary in tmp |
+| 0x43   | xor  | stores bitwise XOR of primary and secondary in tmp |
+| 0x44   | lsh  | logical left shifts tmp |
+| 0x45   | rsh  | logical right shifts tmp |
 
 Most operations scale based on operating size.
+
+## TODO
+
+- I/O
+- writing to tar somehow
+- fetch/swap/rotate stack operations
+- unsigned and signed (2's complement) math modes
+- maybe graphics? (probably via raylib)
+- increase ram size
