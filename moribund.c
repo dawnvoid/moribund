@@ -283,6 +283,55 @@ void moribund_cpu_op_jcm(MoribundCPU *cpu) {
     }
 }
 
+void moribund_cpu_op_jeq(MoribundCPU *cpu) {
+    ByteStack *primary = moribund_cpu_get_stack(cpu, cpu->ps);
+    ByteStack *secondary = moribund_cpu_get_stack(cpu, cpu->ss);
+    if (cpu->os == 1) {
+        unsigned char pb0 = byte_stack_pop(primary);
+        byte_stack_push(primary, pb0);
+        unsigned char sb0 = byte_stack_pop(secondary);
+        byte_stack_push(secondary, sb0);
+        if (pb0 == sb0) {
+            cpu->pc = cpu->tar;
+        }
+    } else if (cpu->os == 2) {
+        unsigned char pb1 = byte_stack_pop(primary);
+        unsigned char pb0 = byte_stack_pop(primary);
+        byte_stack_push(primary, pb0);
+        byte_stack_push(primary, pb1);
+        unsigned char sb1 = byte_stack_pop(secondary);
+        unsigned char sb0 = byte_stack_pop(secondary);
+        byte_stack_push(secondary, sb0);
+        byte_stack_push(secondary, sb1);
+        if (pb1 == sb1 && pb0 == sb0) {
+            cpu->pc = cpu->tar;
+        }
+    } else if (cpu->os == 4) {
+        unsigned char pb3 = byte_stack_pop(primary);
+        unsigned char pb2 = byte_stack_pop(primary);
+        unsigned char pb1 = byte_stack_pop(primary);
+        unsigned char pb0 = byte_stack_pop(primary);
+        byte_stack_push(primary, pb0);
+        byte_stack_push(primary, pb1);
+        byte_stack_push(primary, pb2);
+        byte_stack_push(primary, pb3);
+        unsigned char sb3 = byte_stack_pop(secondary);
+        unsigned char sb2 = byte_stack_pop(secondary);
+        unsigned char sb1 = byte_stack_pop(secondary);
+        unsigned char sb0 = byte_stack_pop(secondary);
+        byte_stack_push(secondary, sb0);
+        byte_stack_push(secondary, sb1);
+        byte_stack_push(secondary, sb2);
+        byte_stack_push(secondary, sb3);
+        if (pb3 == sb3 && pb2 == sb2 && pb1 == sb1 && pb0 == sb0) {
+            cpu->pc = cpu->tar;
+        } 
+    } else {
+        printf("CRASH! (corrupt operating size)\n");
+        exit(-1);
+    }
+}
+
 int moribund_cpu_process(MoribundCPU *cpu) {
     unsigned char instruction = cpu->program[cpu->pc];
     
@@ -355,6 +404,9 @@ int moribund_cpu_process(MoribundCPU *cpu) {
     } else if (instruction == OP_JCM) {
         printf("jcm\n");
         moribund_cpu_op_jcm(cpu);
+    } else if (instruction == OP_JEQ) {
+        printf("jeq\n");
+        moribund_cpu_op_jeq(cpu);
     }
     
     cpu->pc++;
