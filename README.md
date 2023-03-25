@@ -30,38 +30,30 @@ An adventure in computer architecture.
 |--------|------|---------|
 | 0x00   | nop  | does nothing |
 | 0xFF   | hlt  | quits program |
-
 | 0x1A   | 1sa  | primary select sa |
 | 0x1B   | 1sb  | primary select sb |
 | 0x1C   | 1sc  | primary select sc |
 | 0x1D   | 1sd  | primary select sd |
-
 | 0x2A   | 2sa  | secondary select sa |
 | 0x2B   | 2sb  | secondary select sb |
 | 0x2C   | 2sc  | secondary select sc |
 | 0x2D   | 2sd  | secondary select sd |
-
 | 0x01   | ss1  | set operating size to 1 byte |
 | 0x02   | ss2  | set operating size to 2 bytes |
 | 0x04   | ss4  | set operating size to 4 bytes |
-
 | 0x50   | pop  | pop from primary selected stack into tmp |
 | 0x51   | psh  | push to primary selected stack from tmp |
 | 0x52   | dup  | duplicates top item of primary selected stack |
-
 | 0x5E   | set  | pushes the next operating size's worth of bytes from program source into primary |
-
 | 0x99   | jmp  | jump to address in tar |
 | 0x9C   | jcm  | jump to address in tar if primary < secondary |
 | 0x9E   | jeq  | jump to address in tar if primary == secondary |
 | 0x90   | jzr  | jump to address in tar if primary == 0 |
-
 | 0x80   | add  | stores (primary + secondary) in tmp |
 | 0x81   | sub  | stores (primary - secondary) in tmp |
 | 0x82   | mul  | stores (primary * secondary) in tmp |
 | 0x83   | div  | stores (primary / secondary) in tmp |
 | 0x84   | mod  | stores (primary % secondary) in tmp |
-
 | 0x40   | not  | inverts tmp |
 | 0x41   | and  | stores bitwise AND of primary and secondary |
 | 0x42   | orr  | stores bitwise OR of primary and secondary |
