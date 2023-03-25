@@ -183,7 +183,7 @@ void moribund_cpu_op_pop(MoribundCPU *cpu) {
         uint_least16_t bits_2 = (uint_least16_t) byte_stack_pop(stack);
         uint_least16_t bits_1 = (uint_least16_t) byte_stack_pop(stack);
         uint_least16_t bits_0 = (uint_least16_t) byte_stack_pop(stack);
-        cpu->tmp = (bits_3 << 24) + (bits_3 << 16) + (bits_3 << 8) + bits_0;
+        cpu->tmp = (bits_3 << 24) + (bits_2 << 16) + (bits_1 << 8) + bits_0;
     } else {
         printf("CRASH! (corrupt operating size)\n");
         exit(-1);
@@ -332,6 +332,40 @@ void moribund_cpu_op_jeq(MoribundCPU *cpu) {
     }
 }
 
+void moribund_cpu_op_jzr(MoribundCPU *cpu) {
+    ByteStack *stack = moribund_cpu_get_stack(cpu, cpu->ps);
+    if (cpu->os == 1) {
+        unsigned char b0 = byte_stack_pop(stack);
+        byte_stack_push(stack, b0);
+        if (b0 == 0x00u) {
+            cpu->pc = cpu->tar;
+        }
+    } else if (cpu->os == 2) {
+        unsigned char b1 = byte_stack_pop(stack);
+        unsigned char b0 = byte_stack_pop(stack);
+        byte_stack_push(stack, b0);
+        byte_stack_push(stack, b1);
+        if (b1 == 0x00u && b0 == 0x00u) {
+            cpu->pc = cpu->tar;
+        }
+    } else if (cpu->os == 2) {
+        unsigned char b3 = byte_stack_pop(stack);
+        unsigned char b2 = byte_stack_pop(stack);
+        unsigned char b1 = byte_stack_pop(stack);
+        unsigned char b0 = byte_stack_pop(stack);
+        byte_stack_push(stack, b0);
+        byte_stack_push(stack, b1);
+        byte_stack_push(stack, b2);
+        byte_stack_push(stack, b3);
+        if (b3 == 0x00u && b2 == 0x00u && b1 == 0x00u && b0 == 0x00u) {
+            cpu->pc = cpu->tar;
+        } 
+    } else {
+        printf("CRASH! (corrupt operating size)\n");
+        exit(-1);
+    }
+}
+
 int moribund_cpu_process(MoribundCPU *cpu) {
     unsigned char instruction = cpu->program[cpu->pc];
     
@@ -401,12 +435,19 @@ int moribund_cpu_process(MoribundCPU *cpu) {
     else if (instruction == OP_JMP) {
         printf("jmp\n");
         cpu->pc = cpu->tar;
+        return 1;
     } else if (instruction == OP_JCM) {
         printf("jcm\n");
         moribund_cpu_op_jcm(cpu);
+        return 1;
     } else if (instruction == OP_JEQ) {
         printf("jeq\n");
         moribund_cpu_op_jeq(cpu);
+        return 1;
+    } else if (instruction == OP_JZR) {
+        printf("jzr\n");
+        moribund_cpu_op_jzr(cpu);
+        return 1;
     }
     
     cpu->pc++;
@@ -414,6 +455,8 @@ int moribund_cpu_process(MoribundCPU *cpu) {
         printf("CRASH! (program counter out of bounds)\n");
         exit(-1);
     }
+    
+    return 1;
 }
 
 int main(int argc, char **argv)
@@ -444,7 +487,7 @@ int main(int argc, char **argv)
     }
     
     int status = 1;
-    while (status) {
+    for (i = 0; i < 100 && status; i++) {
         status = moribund_cpu_process(&cpu);
     }
     
